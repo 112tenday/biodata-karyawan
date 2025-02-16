@@ -77,20 +77,31 @@ class PelatihanController extends Controller
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return string|\yii\web\Response
      */
-    public function actionCreate($biodata_id)
+    public function actionCreate()
 {
     $model = new Pelatihan();
-    $model->biodata_id = $biodata_id;
 
-    if ($model->load(Yii::$app->request->post()) && $model->save()) {
-        Yii::$app->session->setFlash('success', 'Pelatihan berhasil ditambahkan.');
-        return $this->redirect(['site/dashboard-user']);
+    // Cari data biodata berdasarkan user yang login
+    $biodata = Biodata::findOne(['user_id' => Yii::$app->user->id]);
+
+    if (!$biodata) {
+        Yii::$app->session->setFlash('warning', 'Anda harus mengisi biodata terlebih dahulu.');
+        return $this->redirect(['biodata/create']);
+    }
+
+    if ($model->load(Yii::$app->request->post())) {
+        $model->biodata_id = $biodata->id;
+        if ($model->save()) {
+            Yii::$app->session->setFlash('success', 'Pelatihan berhasil ditambahkan.');
+            return $this->redirect(['site/dashboard-user']);
+        }
     }
 
     return $this->render('create', [
         'model' => $model,
     ]);
 }
+
 
     
 
